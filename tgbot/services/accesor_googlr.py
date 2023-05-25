@@ -8,8 +8,13 @@ class Google_accessor:
         self.session = None
 
 
-    def setup(self) -> None:
+    async def setup(self) -> None:
         self.session = AsyncHTMLSession()
+
+
+    async def disconnect(self) -> None:
+        if self.session:
+           await self.session.close()
 
 
     async def get_response(self, item: str):
@@ -21,12 +26,19 @@ class Google_accessor:
 
 async def main():
     session = Google_accessor()
-    session.setup()
-    r = await session.get_response(item='привет')
-    print(r.html)
-    r = str(r.html)
-    with open('1.html', 'w') as file:
-        file.write(r)
+    try:
+        await session.setup()
+        r = await session.get_response(item='привет')
+        await r.html.arender()
+        print(r.html.html)
+        r = str(r.html.html)
+        with open('1.html', 'w', encoding="utf-8") as file:
+            file.write(r)
+    finally:
+        await session.disconnect()
+    # await r.html.arender()
+    # print(r.html)
+    
 
 
 if __name__ == '__main__':
